@@ -18,8 +18,8 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
 
     string public baseURI =
         "https://cdn.jsdelivr.net/gh/Team-Sleepy/dream_pass_og_metadata@public/";
-    string public baseExtension = ".json";
 
+    string public constant baseExtension = ".json";
     uint256 public constant cost = 0.08 ether;
     uint256 public constant publicCost = 0.1 ether;
 
@@ -136,13 +136,6 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
 
     function setBaseURI(string memory _newURI) public onlyOwner {
         baseURI = _newURI;
-    }
-
-    function setBaseExtension(string memory _newBaseExtension)
-        public
-        onlyOwner
-    {
-        baseExtension = _newBaseExtension;
     }
 
     function whitelistUsers(address[] calldata _users) external onlyOwner {
