@@ -23,7 +23,8 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
     uint256 public constant cost = 0.08 ether;
     uint256 public constant publicCost = 0.1 ether;
 
-    address[] public whitelistedAddresses;
+    // lock WL at time of contract deployment
+    address[] public whitelistedAddresses = [];
 
     mapping(address => uint256) public addressMintedBalance;
 
@@ -136,11 +137,6 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
 
     function setBaseURI(string memory _newURI) public onlyOwner {
         baseURI = _newURI;
-    }
-
-    function whitelistUsers(address[] calldata _users) external onlyOwner {
-        delete whitelistedAddresses;
-        whitelistedAddresses = _users;
     }
 
     function withdraw() public payable onlyOwner {
