@@ -16,7 +16,8 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
 
     SaleStatus public currentStatus = SaleStatus.INACTIVE;
 
-    string public baseURI;
+    string public baseURI =
+        "https://cdn.jsdelivr.net/gh/Team-Sleepy/dream_pass_og_metadata@public/";
     string public baseExtension = ".json";
 
     uint256 public cost = 0.08 ether;
@@ -29,13 +30,9 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
 
     event passMinted(address _to, uint256 _amount, string _remark);
 
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        string memory _initBaseURI
-    ) ERC721(_name, _symbol) {
-        setBaseURI(_initBaseURI);
-    }
+    constructor(string memory _name, string memory _symbol)
+        ERC721(_name, _symbol)
+    {}
 
     // internal
     function _baseURI() internal view virtual override returns (string memory) {
@@ -45,41 +42,32 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
     // public
 
     function mintPreSale() public payable {
-        require(
-            currentStatus == SaleStatus.PRE_SALE,
-            "Pre-sale mint has ended/not started!"
-        );
+        require(currentStatus == SaleStatus.PRE_SALE, "Presale inactive");
 
         uint256 supply = totalSupply();
         uint256 mintAmount = 1;
 
-        require(supply + mintAmount <= maxSupply, "max NFT limit exceeded");
-        require(isWhitelisted(msg.sender), "you must be whitelisted");
+        require(supply + mintAmount <= maxSupply, "maxed");
+        require(isWhitelisted(msg.sender), "no WL");
 
         uint256 ownerMintedCount = addressMintedBalance[msg.sender];
 
-        require(
-            ownerMintedCount < 1,
-            "Max NFT per address minted during presale is 1!"
-        );
-        require(msg.value >= cost * mintAmount, "insufficient funds");
+        require(ownerMintedCount < 1, "minted");
+        require(msg.value >= cost * mintAmount, "not enuf eth");
 
         _safeMint(msg.sender, supply + 1);
         addressMintedBalance[msg.sender]++;
-        emit passMinted(msg.sender, 1, "pre-sale mint");
+        emit passMinted(msg.sender, 1, "presale mint");
     }
 
     function mintPublicSale(uint256 _mintAmount) public payable {
-        require(
-            currentStatus == SaleStatus.PUBLIC_SALE,
-            "Public sale mint has ended/not started!"
-        );
+        require(currentStatus == SaleStatus.PUBLIC_SALE, "Public INACTIVE");
 
         uint256 supply = totalSupply();
 
-        require(_mintAmount > 0, "need to mint at least 1 NFT");
-        require(supply + _mintAmount <= maxSupply, "max NFT limit exceeded");
-        require(msg.value >= cost * _mintAmount, "insufficient funds");
+        require(_mintAmount > 0, "min=1");
+        require(supply + _mintAmount <= maxSupply, "maxed");
+        require(msg.value >= cost * _mintAmount, "not enuf eth");
 
         for (uint256 i = 1; i <= _mintAmount; i++) {
             _safeMint(msg.sender, supply + i);
@@ -93,24 +81,6 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
                 return true;
             }
         }
-        return false;
-    }
-
-    function canMint(address _user) public view returns (bool) {
-        if (currentStatus == SaleStatus.INACTIVE) {
-            return false;
-        }
-        if (currentStatus == SaleStatus.PRE_SALE) {
-            for (uint256 i = 0; i < whitelistedAddresses.length; i++) {
-                if (whitelistedAddresses[i] == _user) {
-                    return true;
-                }
-            }
-        }
-        if (currentStatus == SaleStatus.PUBLIC_SALE) {
-            return true;
-        }
-
         return false;
     }
 
@@ -199,7 +169,7 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
         baseExtension = _newBaseExtension;
     }
 
-    function whitelistUsers(address[] calldata _users) public onlyOwner {
+    function whitelistUsers(address[] calldata _users) external onlyOwner {
         delete whitelistedAddresses;
         whitelistedAddresses = _users;
     }
