@@ -20,9 +20,8 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
         "https://cdn.jsdelivr.net/gh/Team-Sleepy/dream_pass_og_metadata@public/";
     string public baseExtension = ".json";
 
-    uint256 public cost = 0.08 ether;
-    uint256 public maxSupply = 50;
-    uint256 public nftPerAddressLimit = 1;
+    uint256 public constant cost = 0.08 ether;
+    uint256 public constant publicCost = 0.1 ether;
 
     address[] public whitelistedAddresses;
 
@@ -47,7 +46,7 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
         uint256 supply = totalSupply();
         uint256 mintAmount = 1;
 
-        require(supply + mintAmount <= maxSupply, "maxed");
+        require(supply + mintAmount <= 50, "maxed");
         require(isWhitelisted(msg.sender), "no WL");
 
         uint256 ownerMintedCount = addressMintedBalance[msg.sender];
@@ -66,8 +65,8 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
         uint256 supply = totalSupply();
 
         require(_mintAmount > 0, "min=1");
-        require(supply + _mintAmount <= maxSupply, "maxed");
-        require(msg.value >= cost * _mintAmount, "not enuf eth");
+        require(supply + _mintAmount <= 50, "maxed");
+        require(msg.value >= publicCost * _mintAmount, "not enuf eth");
 
         for (uint256 i = 1; i <= _mintAmount; i++) {
             _safeMint(msg.sender, supply + i);
@@ -121,41 +120,18 @@ contract DreamPassOG is ERC721Enumerable, Ownable {
 
     //only owner
 
-    function startPreSale() public onlyOwner {
-        currentStatus = SaleStatus.PRE_SALE;
-        cost = 0.08 ether;
-    }
-
-    function endPreSale() public onlyOwner {
-        currentStatus = SaleStatus.INACTIVE;
-        cost = 0.1 ether;
-    }
-
-    function startPublicSale() public onlyOwner {
-        currentStatus = SaleStatus.PUBLIC_SALE;
-        cost = 0.1 ether;
-    }
-
-    function endPublicSale() public onlyOwner {
-        currentStatus = SaleStatus.INACTIVE;
+    function setStatus(SaleStatus newStatus) external onlyOwner {
+        currentStatus = newStatus;
     }
 
     function devMint(uint256 _mintAmount) public onlyOwner {
         uint256 supply = totalSupply();
         require(_mintAmount > 0, "need to mint at least 1 NFT");
-        require(supply + _mintAmount <= maxSupply, "max NFT limit exceeded");
+        require(supply + _mintAmount <= 50, "max NFT limit exceeded");
         for (uint256 i = 1; i <= _mintAmount; i++) {
             _safeMint(msg.sender, supply + i);
         }
         emit passMinted(msg.sender, _mintAmount, "dev mint");
-    }
-
-    function setNftPerAddressLimit(uint256 _limit) public onlyOwner {
-        nftPerAddressLimit = _limit;
-    }
-
-    function setCost(uint256 _newCost) public onlyOwner {
-        cost = _newCost;
     }
 
     function setBaseURI(string memory _newURI) public onlyOwner {
